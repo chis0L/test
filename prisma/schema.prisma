@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id               String             @id @default(cuid())
+  firstName        String
+  lastName         String
+  middleName       String?
+  birthDate        DateTime?
+  avatar           String?
+  passportPhoto    String?
+  passportSeries   String?
+  passportNumber   String?
+  passportIssued   String?
+  passportDate     DateTime?
+  address          String?
+  position         String
+  department       String?
+  hireDate         DateTime
+  salary           Float?
+  status           EmployeeStatus     @default(ACTIVE)
+  phone            String
+  email            String?
+  telegram         String?
+  whatsapp         String?
+  emergencyContact String?
+  emergencyPhone   String?
+  organizationId   String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  scheduleRecords  EmployeeSchedule[]
+  organization     Organization       @relation(fields: [organizationId], references: [id])
+}
+
+model EmployeeSchedule {
+  id          String         @id @default(cuid())
+  date        DateTime
+  status      ScheduleStatus
+  hoursWorked Float?
+  notes       String?
+  employeeId  String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  employee    Employee       @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId, date])
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  VACATION
+  SICK
+  FIRED
+}
+
+enum ScheduleStatus {
+  WORK
+  WEEKEND
+  VACATION
+  SICK
+  ABSENT
+}
+
+enum user_role {
+  admin
+  user
+}
+
+model Organization {
+  id        String     @id @default(cuid())
+  name      String
+  employees Employee[]
+}
+
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  role          user_role
+  created_at    DateTime  @db.Timestamp(6)
+  updated_at    DateTime  @db.Timestamp(6)
+  login         String    @unique @db.VarChar
+  password_hash String    @db.VarChar
+
+  @@map("users")
+}
