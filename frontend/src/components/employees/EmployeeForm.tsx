@@ -39,30 +39,61 @@ type EmployeeFormProps = {
   initValues?: Partial<typeof initialState>;
 };
 
+// Функция для очистки input: заменяет пустые строки на undefined
+function cleanInput(obj: Record<string, unknown>) {
+  const cleaned: Record<string, unknown> = {};
+  for (const key in obj) {
+    cleaned[key] = obj[key] === '' ? undefined : obj[key];
+  }
+  return cleaned;
+}
+
 export default function EmployeeForm({ onSuccess, onCancel, initValues }: EmployeeFormProps) {
   const [form, setForm] = useState(initValues ? { ...initialState, ...initValues } : initialState);
   const [loading, setLoading] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [createEmployee] = useMutation(CREATE_EMPLOYEE);
   const [updateEmployee] = useMutation(UPDATE_EMPLOYEE);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setErrors((prev) => ({ ...prev, [e.target.name]: '' }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.firstName || !form.lastName || !form.position || !form.phone || !form.hireDate) {
+    const newErrors: { [key: string]: string } = {};
+    if (!form.firstName) newErrors.firstName = 'Введите имя';
+    if (!form.lastName) newErrors.lastName = 'Введите фамилию';
+    if (!form.position) newErrors.position = 'Укажите должность';
+    if (!form.phone) newErrors.phone = 'Укажите телефон';
+    if (!form.hireDate) newErrors.hireDate = 'Укажите дату приёма';
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       toast.error('Пожалуйста, заполните все обязательные поля');
       return;
     }
     setLoading(true);
     try {
       if (form.id) {
-        await updateEmployee({ variables: { id: form.id, input: { ...form, hireDate: new Date(form.hireDate) } } });
+        const { id, ...input } = form;
+        const preparedInput = cleanInput({
+          ...input,
+          salary: input.salary ? parseFloat(input.salary) : undefined,
+          hireDate: form.hireDate ? new Date(form.hireDate).toISOString() : undefined,
+        });
+        await updateEmployee({ variables: { id: form.id, input: preparedInput } });
         toast.success('Данные сотрудника обновлены!');
       } else {
-        await createEmployee({ variables: { input: { ...form, hireDate: new Date(form.hireDate) } } });
+        const { id, ...input } = form;
+        const preparedInput = cleanInput({
+          ...input,
+          organizationId: input.organizationId || 'demo-org',
+          salary: input.salary ? parseFloat(input.salary) : undefined,
+          hireDate: form.hireDate ? new Date(form.hireDate).toISOString() : undefined,
+        });
+        await createEmployee({ variables: { input: preparedInput } });
         toast.success('Сотрудник успешно добавлен!');
         setForm(initialState);
       }
@@ -103,27 +134,42 @@ export default function EmployeeForm({ onSuccess, onCancel, initValues }: Employ
           <input type="file" accept="image/*" className="hidden" onChange={handleAvatar} />
         </label>
         <div className="flex-1 grid grid-cols-2 gap-2">
-          <input name="lastName" value={form.lastName} onChange={handleChange} placeholder="Фамилия*" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Фамилия" />
-          <input name="firstName" value={form.firstName} onChange={handleChange} placeholder="Имя*" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Имя" />
-          <input name="middleName" value={form.middleName} onChange={handleChange} placeholder="Отчество" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Отчество" />
-          <input name="email" value={form.email} onChange={handleChange} placeholder="Email" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Email" />
+          <div className="flex flex-col">
+            <input name="lastName" value={form.lastName || ''} onChange={handleChange} placeholder="Фамилия*" className={`px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border ${errors.lastName ? 'border-red-500' : 'border-white/20'} focus:border-violet-400 transition`} aria-label="Фамилия" />
+            {errors.lastName && <span className="text-red-400 text-xs mt-1">{errors.lastName}</span>}
+          </div>
+          <div className="flex flex-col">
+            <input name="firstName" value={form.firstName || ''} onChange={handleChange} placeholder="Имя*" className={`px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border ${errors.firstName ? 'border-red-500' : 'border-white/20'} focus:border-violet-400 transition`} aria-label="Имя" />
+            {errors.firstName && <span className="text-red-400 text-xs mt-1">{errors.firstName}</span>}
+          </div>
+          <input name="middleName" value={form.middleName || ''} onChange={handleChange} placeholder="Отчество" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Отчество" />
+          <input name="email" value={form.email || ''} onChange={handleChange} placeholder="Email" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Email" />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <input name="position" value={form.position} onChange={handleChange} placeholder="Должность*" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Должность" />
-        <input name="phone" value={form.phone} onChange={handleChange} placeholder="Телефон*" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Телефон" />
-        <input name="hireDate" value={form.hireDate} onChange={handleChange} type="date" placeholder="Дата приёма*" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Дата приёма" />
-        <input name="birthDate" value={form.birthDate} onChange={handleChange} type="date" placeholder="Дата рождения" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Дата рождения" />
-        <input name="address" value={form.address} onChange={handleChange} placeholder="Адрес" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Адрес" />
-        <input name="salary" value={form.salary} onChange={handleChange} placeholder="Оклад" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Оклад" />
-        <input name="passportSeries" value={form.passportSeries} onChange={handleChange} placeholder="Серия паспорта" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Серия паспорта" />
-        <input name="passportNumber" value={form.passportNumber} onChange={handleChange} placeholder="Номер паспорта" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Номер паспорта" />
-        <input name="passportIssued" value={form.passportIssued} onChange={handleChange} placeholder="Кем выдан паспорт" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Кем выдан паспорт" />
-        <input name="passportDate" value={form.passportDate} onChange={handleChange} type="date" placeholder="Дата выдачи паспорта" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Дата выдачи паспорта" />
-        <input name="telegram" value={form.telegram} onChange={handleChange} placeholder="Telegram" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Telegram" />
-        <input name="whatsapp" value={form.whatsapp} onChange={handleChange} placeholder="WhatsApp" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="WhatsApp" />
-        <input name="emergencyContact" value={form.emergencyContact} onChange={handleChange} placeholder="Контакт для экстренной связи" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Экстренный контакт" />
-        <input name="emergencyPhone" value={form.emergencyPhone} onChange={handleChange} placeholder="Телефон экстренного контакта" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Телефон экстренного контакта" />
+        <div className="flex flex-col">
+          <input name="position" value={form.position || ''} onChange={handleChange} placeholder="Должность*" className={`px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border ${errors.position ? 'border-red-500' : 'border-white/20'} focus:border-violet-400 transition`} aria-label="Должность" />
+          {errors.position && <span className="text-red-400 text-xs mt-1">{errors.position}</span>}
+        </div>
+        <div className="flex flex-col">
+          <input name="phone" value={form.phone || ''} onChange={handleChange} placeholder="Телефон*" className={`px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border ${errors.phone ? 'border-red-500' : 'border-white/20'} focus:border-violet-400 transition`} aria-label="Телефон" />
+          {errors.phone && <span className="text-red-400 text-xs mt-1">{errors.phone}</span>}
+        </div>
+        <div className="flex flex-col">
+          <input name="hireDate" value={form.hireDate || ''} onChange={handleChange} type="date" placeholder="Дата приёма*" className={`px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border ${errors.hireDate ? 'border-red-500' : 'border-white/20'} focus:border-violet-400 transition`} aria-label="Дата приёма" />
+          {errors.hireDate && <span className="text-red-400 text-xs mt-1">{errors.hireDate}</span>}
+        </div>
+        <input name="birthDate" value={form.birthDate || ''} onChange={handleChange} type="date" placeholder="Дата рождения" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Дата рождения" />
+        <input name="address" value={form.address || ''} onChange={handleChange} placeholder="Адрес" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Адрес" />
+        <input name="salary" value={form.salary || ''} onChange={handleChange} placeholder="Оклад" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Оклад" />
+        <input name="passportSeries" value={form.passportSeries || ''} onChange={handleChange} placeholder="Серия паспорта" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Серия паспорта" />
+        <input name="passportNumber" value={form.passportNumber || ''} onChange={handleChange} placeholder="Номер паспорта" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Номер паспорта" />
+        <input name="passportIssued" value={form.passportIssued || ''} onChange={handleChange} placeholder="Кем выдан паспорт" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Кем выдан паспорт" />
+        <input name="passportDate" value={form.passportDate || ''} onChange={handleChange} type="date" placeholder="Дата выдачи паспорта" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Дата выдачи паспорта" />
+        <input name="telegram" value={form.telegram || ''} onChange={handleChange} placeholder="Telegram" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Telegram" />
+        <input name="whatsapp" value={form.whatsapp || ''} onChange={handleChange} placeholder="WhatsApp" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="WhatsApp" />
+        <input name="emergencyContact" value={form.emergencyContact || ''} onChange={handleChange} placeholder="Контакт для экстренной связи" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Экстренный контакт" />
+        <input name="emergencyPhone" value={form.emergencyPhone || ''} onChange={handleChange} placeholder="Телефон экстренного контакта" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Телефон экстренного контакта" />
       </div>
       <div className="flex gap-2 justify-end mt-2">
         <button type="button" onClick={onCancel} className="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700 transition">Отмена</button>

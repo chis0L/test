@@ -34,4 +34,10 @@ export const UPDATE_EMPLOYEE = gql`
       }
     }
   }
+`;
+
+export const DELETE_EMPLOYEE = gql`
+  mutation DeleteEmployee($id: ID!) {
+    deleteEmployee(id: $id)
+  }
 `; 

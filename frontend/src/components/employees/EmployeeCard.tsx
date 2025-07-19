@@ -1,6 +1,9 @@
 'use client';
 import { useState } from 'react';
 import EmployeeForm from './EmployeeForm';
+import { useMutation } from '@apollo/client';
+import { DELETE_EMPLOYEE } from '@/graphql/mutations';
+import { toast } from 'sonner';
 
 type EmployeeCardProps = {
   id: string;
@@ -14,7 +17,7 @@ type EmployeeCardProps = {
   avatar?: string;
 };
 
-export default function EmployeeCard(props: EmployeeCardProps) {
+export default function EmployeeCard(props: EmployeeCardProps & { refetch?: () => void }) {
   const {
     id,
     firstName,
@@ -28,6 +31,15 @@ export default function EmployeeCard(props: EmployeeCardProps) {
   } = props;
 
   const [edit, setEdit] = useState(false);
+  const [deleteEmployee] = useMutation(DELETE_EMPLOYEE);
+
+  const handleDelete = async () => {
+    if (confirm('Вы уверены, что хотите удалить сотрудника?')) {
+      await deleteEmployee({ variables: { id } });
+      toast.success('Сотрудник удалён');
+      props.refetch?.();
+    }
+  };
 
   if (edit) {
     return (
@@ -69,7 +81,7 @@ export default function EmployeeCard(props: EmployeeCardProps) {
       </div>
       <div className="flex gap-2 mt-4">
         <button className="px-3 py-1 rounded bg-violet-600 text-white hover:bg-violet-700 transition" onClick={() => setEdit(true)}>Редактировать</button>
-        <button className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700 transition">Уволить</button>
+        <button className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700 transition" onClick={handleDelete}>Удалить</button>
       </div>
     </div>
   );
