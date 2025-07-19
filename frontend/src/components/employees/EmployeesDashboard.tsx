@@ -81,9 +81,9 @@ export default function EmployeesDashboard() {
   return (
     <Tabs value={tab} onValueChange={setTab} className="w-full">
       <TabsList className="flex gap-2 mb-6 bg-gradient-to-r from-violet-900/80 to-fuchsia-900/60 p-2 rounded-2xl shadow-lg backdrop-blur-xl">
-        <TabsTrigger value="employees" className="px-6 py-2 rounded-full text-base font-bold bg-white/10 text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-fuchsia-500 data-[state=active]:shadow-lg data-[state=active]:text-white transition-all duration-300">Сотрудники</TabsTrigger>
-        <TabsTrigger value="schedule" className="px-6 py-2 rounded-full text-base font-bold bg-white/10 text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:shadow-lg data-[state=active]:text-white transition-all duration-300">Расписание</TabsTrigger>
-        <TabsTrigger value="stats" className="px-6 py-2 rounded-full text-base font-bold bg-white/10 text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-lime-500 data-[state=active]:shadow-lg data-[state=active]:text-white transition-all duration-300">Статистика</TabsTrigger>
+        <TabsTrigger value="employees" className="px-6 py-2 rounded-full text-base font-bold bg-white/10 text-white cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-fuchsia-500 data-[state=active]:shadow-lg data-[state=active]:text-white transition-all duration-500 ease-in-out transition-colors transition-shadow transition-transform hover:scale-105 hover:shadow-xl hover:bg-gradient-to-r hover:from-fuchsia-500 hover:to-violet-500 hover:ring-4 hover:ring-fuchsia-400/30">Сотрудники</TabsTrigger>
+        <TabsTrigger value="schedule" className="px-6 py-2 rounded-full text-base font-bold bg-white/10 text-white cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:shadow-lg data-[state=active]:text-white transition-all duration-500 ease-in-out transition-colors transition-shadow transition-transform hover:scale-105 hover:shadow-xl hover:bg-gradient-to-r hover:from-cyan-500 hover:to-blue-500 hover:ring-4 hover:ring-cyan-400/30">Расписание</TabsTrigger>
+        <TabsTrigger value="stats" className="px-6 py-2 rounded-full text-base font-bold bg-white/10 text-white cursor-pointer data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-lime-500 data-[state=active]:shadow-lg data-[state=active]:text-white transition-all duration-500 ease-in-out transition-colors transition-shadow transition-transform hover:scale-105 hover:shadow-xl hover:bg-gradient-to-r hover:from-lime-500 hover:to-green-500 hover:ring-4 hover:ring-lime-400/30">Статистика</TabsTrigger>
       </TabsList>
       <TabsContent value="employees">
         <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
@@ -91,7 +91,7 @@ export default function EmployeesDashboard() {
             {statuses.map(s => (
               <button
                 key={s.value}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all duration-300 shadow-sm backdrop-blur-md ${status === s.value ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white border-violet-700 shadow-lg' : 'bg-white/10 text-white/70 border-white/20 hover:bg-violet-800/30'}`}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold border cursor-pointer transition-all duration-500 ease-in-out transition-colors transition-shadow transition-transform shadow-sm backdrop-blur-md ${status === s.value ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white border-violet-700 shadow-lg' : 'bg-white/10 text-white/70 border-white/20 hover:bg-gradient-to-r hover:from-fuchsia-500 hover:to-violet-500 hover:text-white hover:scale-105 hover:shadow-lg hover:ring-4 hover:ring-fuchsia-400/30'}`}
                 onClick={() => setStatus(s.value)}
               >
                 {s.label}
@@ -106,7 +106,7 @@ export default function EmployeesDashboard() {
             onChange={e => setSearch(e.target.value)}
           />
           <button
-            className="flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-green-500 to-lime-500 text-white font-bold shadow-lg hover:scale-105 hover:shadow-xl active:scale-95 transition-all duration-300 text-base"
+            className="flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-green-500 to-lime-500 text-white font-bold shadow-lg hover:scale-105 hover:shadow-xl hover:bg-gradient-to-r hover:from-lime-500 hover:to-green-500 hover:ring-4 hover:ring-lime-400/30 active:scale-95 transition-all duration-500 ease-in-out text-base cursor-pointer"
             onClick={() => setShowForm(v => !v)}
           >
             <Plus className="w-5 h-5" /> {showForm ? 'Скрыть форму' : 'Добавить сотрудника'}

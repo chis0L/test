@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import EmployeeForm from './EmployeeForm';
 import { useMutation } from '@apollo/client';
 import { DELETE_EMPLOYEE } from '@/graphql/mutations';
@@ -18,7 +18,7 @@ type EmployeeCardProps = {
   avatar?: string;
 };
 
-export default function EmployeeCard(props: EmployeeCardProps & { refetch?: () => void }) {
+export default React.memo(function EmployeeCard(props: EmployeeCardProps & { refetch?: () => void }) {
   const {
     id,
     firstName,
@@ -34,13 +34,13 @@ export default function EmployeeCard(props: EmployeeCardProps & { refetch?: () =
   const [edit, setEdit] = useState(false);
   const [deleteEmployee] = useMutation(DELETE_EMPLOYEE);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (confirm('Вы уверены, что хотите удалить сотрудника?')) {
       await deleteEmployee({ variables: { id } });
       toast.success('Сотрудник удалён');
       props.refetch?.();
     }
-  };
+  }, [deleteEmployee, id, props]);
 
   if (edit) {
     return (
@@ -81,13 +81,13 @@ export default function EmployeeCard(props: EmployeeCardProps & { refetch?: () =
         }`}>{status}</span>
       </div>
       <div className="flex gap-3 mt-6 w-full justify-center">
-        <button className="flex items-center gap-1 px-4 py-2 min-w-[120px] max-w-[140px] rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-bold shadow-md hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 whitespace-nowrap text-sm overflow-hidden text-ellipsis" onClick={() => setEdit(true)}>
+        <button className="flex items-center gap-1 px-4 py-2 min-w-[120px] max-w-[140px] rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-bold shadow-md transition-all duration-300 whitespace-nowrap text-sm overflow-hidden text-ellipsis focus:outline-none focus:ring-2 focus:ring-violet-400/60 hover:scale-105 hover:shadow-xl hover:bg-gradient-to-r hover:from-fuchsia-500 hover:to-violet-500 hover:ring-4 hover:ring-fuchsia-400/30" onClick={() => setEdit(true)}>
           <Edit className="w-4 h-4" /> <span className="truncate">Редактировать</span>
         </button>
-        <button className="flex items-center gap-1 px-4 py-2 min-w-[120px] max-w-[140px] rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold shadow-md hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 whitespace-nowrap text-sm overflow-hidden text-ellipsis" onClick={handleDelete}>
+        <button className="flex items-center gap-1 px-4 py-2 min-w-[120px] max-w-[140px] rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold shadow-md transition-all duration-300 whitespace-nowrap text-sm overflow-hidden text-ellipsis focus:outline-none focus:ring-2 focus:ring-red-400/60 hover:scale-105 hover:shadow-xl hover:bg-gradient-to-r hover:from-pink-500 hover:to-red-500 hover:ring-4 hover:ring-pink-400/30" onClick={handleDelete}>
           <Trash2 className="w-4 h-4" /> <span className="truncate">Удалить</span>
         </button>
       </div>
     </div>
   );
-} 
+}); 

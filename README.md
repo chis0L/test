@@ -36,7 +36,7 @@
    ```
 3. Запустите Apollo Server:
    ```bash
-   npx ts-node server.ts
+   node server.cjs
    ```
    Сервер будет доступен на http://localhost:4000/
 
@@ -81,4 +81,5 @@
 ---
 
 Для вопросов и поддержки — пишите!
+
 # test

@@ -5,6 +5,7 @@ import { useMutation } from '@apollo/client';
 import { toast } from 'sonner';
 import { CREATE_EMPLOYEE, UPDATE_EMPLOYEE } from '@/graphql/mutations';
 import { uploadToS3 } from '@/lib/s3upload';
+import { Plus } from 'lucide-react';
 
 const initialState = {
   id: '',
@@ -40,8 +41,8 @@ type EmployeeFormProps = {
 };
 
 // Функция для очистки input: заменяет пустые строки на undefined
-function cleanInput(obj: Record<string, unknown>) {
-  const cleaned: Record<string, unknown> = {};
+function cleanInput<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  const cleaned: Partial<T> = {};
   for (const key in obj) {
     cleaned[key] = obj[key] === '' ? undefined : obj[key];
   }
@@ -123,7 +124,7 @@ export default function EmployeeForm({ onSuccess, onCancel, initValues }: Employ
   return (
     <form onSubmit={handleSubmit} className="glass-card p-6 rounded-xl mb-6 flex flex-col gap-4 animate-fade-in max-w-xl mx-auto shadow-2xl">
       <div className="flex gap-4 items-center mb-2">
-        <label className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold text-white cursor-pointer hover:bg-white/30 transition relative overflow-hidden" aria-label="Загрузить аватар">
+        <label className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold text-white cursor-pointer hover:bg-white/30 transition relative overflow-hidden ring-2 ring-violet-400/30 focus-within:ring-4 focus-within:ring-violet-400/60" aria-label="Загрузить аватар">
           {form.avatar ? (
             <img src={form.avatar} alt="avatar" className="w-full h-full object-cover rounded-full" />
           ) : avatarLoading ? (
@@ -172,9 +173,9 @@ export default function EmployeeForm({ onSuccess, onCancel, initValues }: Employ
         <input name="emergencyPhone" value={form.emergencyPhone || ''} onChange={handleChange} placeholder="Телефон экстренного контакта" className="px-3 py-2 rounded bg-white/10 text-white placeholder-white/50 outline-none border border-white/20 focus:border-violet-400 transition" aria-label="Телефон экстренного контакта" />
       </div>
       <div className="flex gap-2 justify-end mt-2">
-        <button type="button" onClick={onCancel} className="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700 transition">Отмена</button>
-        <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-violet-600 text-white hover:bg-violet-700 transition disabled:opacity-50">
-          {loading ? 'Сохраняю...' : (form.id ? 'Сохранить' : 'Добавить')}
+        <button type="button" onClick={onCancel} className="px-4 py-2 rounded-full bg-gray-600 text-white hover:bg-gray-700 hover:scale-105 hover:shadow-lg transition-all duration-300">Отмена</button>
+        <button type="submit" disabled={loading} className="flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-bold shadow-lg hover:scale-105 hover:shadow-xl hover:bg-gradient-to-r hover:from-fuchsia-500 hover:to-violet-500 hover:ring-4 hover:ring-fuchsia-400/30 active:scale-95 transition-all duration-300 disabled:opacity-50 text-base">
+          {loading ? <span className="animate-spin">⏳</span> : <Plus className="w-5 h-5" />} {form.id ? 'Сохранить' : 'Добавить'}
         </button>
       </div>
     </form>
